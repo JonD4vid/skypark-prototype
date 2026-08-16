@@ -7,6 +7,7 @@ import {
   ORG_USERS,
   SEED_TRANSACTIONS,
   VALIDATION_RULES,
+  validationDetail,
 } from '@/data/mock'
 import { isSameDay, nowIso } from '@/lib/format'
 import { appendRefundTimeline, emptyRefund, timelineErrors } from '@/lib/powertranz'
@@ -366,6 +367,69 @@ export const useAdminStore = defineStore('admin', () => {
     return true
   }
 
+  function orgLabel(orgId) {
+    const org = organisations.value.find((row) => row.id === orgId)
+    if (!org) return '—'
+    return org.suite ? `${org.name} · ${org.suite}` : org.name
+  }
+
+  function cloneValidationFields(payload) {
+    const type = payload.type || 'Free time'
+    const value = Number(payload.value)
+    const capLimit = payload.capLimit === '' || payload.capLimit == null ? null : Number(payload.capLimit)
+    return {
+      orgId: payload.orgId || '',
+      type,
+      value: Number.isFinite(value) ? value : 0,
+      facility: (payload.facility || 'All SkyPark').trim() || 'All SkyPark',
+      capLimit: Number.isFinite(capLimit) && capLimit > 0 ? capLimit : null,
+    }
+  }
+
+  function ruleSummary(rule) {
+    return `${orgLabel(rule.orgId)} · ${validationDetail(rule.type, rule.value)} · ${rule.facility}`
+  }
+
+  function createValidation(payload) {
+    const fields = cloneValidationFields(payload)
+    if (!fields.orgId || !fields.value) return null
+    const rule = { id: makeId('v'), uses: 0, ...fields }
+    validationRules.value = [rule, ...validationRules.value]
+    log({
+      action: 'Created validation',
+      category: 'admin',
+      detail: ruleSummary(rule),
+      orgId: rule.orgId,
+    })
+    return rule
+  }
+
+  function updateValidation(id, payload) {
+    const rule = validationRules.value.find((row) => row.id === id)
+    if (!rule) return null
+    Object.assign(rule, cloneValidationFields({ ...rule, ...payload }))
+    log({
+      action: 'Updated validation',
+      category: 'admin',
+      detail: ruleSummary(rule),
+      orgId: rule.orgId,
+    })
+    return rule
+  }
+
+  function deleteValidation(id) {
+    const rule = validationRules.value.find((row) => row.id === id)
+    if (!rule) return false
+    validationRules.value = validationRules.value.filter((row) => row.id !== id)
+    log({
+      action: 'Deleted validation',
+      category: 'admin',
+      detail: ruleSummary(rule),
+      orgId: rule.orgId,
+    })
+    return true
+  }
+
   return {
     transactions,
     customers,
@@ -382,6 +446,10 @@ export const useAdminStore = defineStore('admin', () => {
     createOrgUser,
     updateOrgUser,
     deleteOrgUser,
+    orgLabel,
+    createValidation,
+    updateValidation,
+    deleteValidation,
     collectedToday,
     transactionCountToday,
     validatedToday,

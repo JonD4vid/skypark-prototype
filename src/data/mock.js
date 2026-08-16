@@ -350,11 +350,26 @@ export const ORG_USERS = [
   },
 ]
 
+export const VALIDATION_TYPES = ['Free time', 'Percentage', 'Fixed value']
+
 export const VALIDATION_RULES = [
-  { id: 'v1', org: 'Anchor tenant · Suite 300', type: 'Free time', detail: '2 hours free', facility: 'All SkyPark', uses: 128, cap: 'Unlimited' },
-  { id: 'v2', org: 'Retail merchant · Food court', type: 'Percentage', detail: '50% off total', facility: 'Level 2 west', uses: 64, cap: '200 / month' },
-  { id: 'v3', org: 'Retail merchant · Food court', type: 'Fixed value', detail: '$20.00 credit', facility: 'Level 2 west', uses: 19, cap: '50 / month' },
+  { id: 'v1', orgId: 'org-anchor', type: 'Free time', value: 2, facility: 'All SkyPark', uses: 128, capLimit: null },
+  { id: 'v2', orgId: 'org-food', type: 'Percentage', value: 50, facility: 'Level 2 west', uses: 64, capLimit: 200 },
+  { id: 'v3', orgId: 'org-food', type: 'Fixed value', value: 20, facility: 'Level 2 west', uses: 19, capLimit: 50 },
 ]
+
+export function validationDetail(type, value) {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  if (type === 'Free time') return `${n} hour${n === 1 ? '' : 's'} free`
+  if (type === 'Percentage') return `${n}% off total`
+  if (type === 'Fixed value') return `$${n.toFixed(2)} credit`
+  return ''
+}
+
+export function validationCap(capLimit) {
+  return capLimit ? `${capLimit} / month` : 'Unlimited'
+}
 
 export const DEFAULT_CARDS = [
   {
