@@ -35,4 +35,4 @@ Amount due is always read-only and attributed to entervo. "You may now exit" is 
 
 ## Stack
 
-Vue 3, Vue Router, Pinia, Vite. No backend. TTD amounts. Design language matches the existing prototype: Instrument Sans, IBM Plex Mono, `#1141a3`.
+Vue 3, Vue Router, Pinia, Vite. No backend. TTD amounts.
